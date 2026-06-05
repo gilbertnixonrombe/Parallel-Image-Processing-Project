@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parallel Image Processing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f9f9f9;
+      color: #222;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* top bar */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-left span {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .header-left small {
+      color: #888;
+      font-size: 0.78rem;
+    }
+    nav a {
+      text-decoration: none;
+      color: #555;
+      font-size: 0.83rem;
+      margin-left: 22px;
+      transition: color 0.15s;
+    }
+    nav a:hover { color: #000; }
+
+    /* layout */
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* hero */
+    .hero {
+      margin-bottom: 48px;
+    }
+    .hero h1 {
+      font-size: 1.9rem;
+      font-weight: 600;
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+    .hero p {
+      color: #555;
+      max-width: 560px;
+      margin-bottom: 18px;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: #f0f0f0;
+      color: #555;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tag.green { background: #e8f5ee; color: #2a7a4f; }
+
+    /* divider */
+    hr { border: none; border-top: 1px solid #e5e5e5; margin: 36px 0; }
+
+    /* section headings */
+    h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #ebebeb;
+    }
+    h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 22px 0 8px;
+      color: #333;
+    }
+    p { color: #444; margin-bottom: 12px; font-size: 0.9rem; }
+
+    section { margin-bottom: 44px; scroll-margin-top: 60px; }
+
+    /* code */
+    pre {
+      background: #f4f4f4;
+      border: 1px solid #e0e0e0;
+      border-radius: 7px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.65;
+      color: #333;
+      margin: 10px 0 16px;
+    }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: #f0f0f0;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.8rem;
+      color: #c0392b;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+
+    /* table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.87rem; margin: 10px 0 16px; }
+    th {
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+      padding: 8px 12px;
+      border-bottom: 2px solid #e5e5e5;
+    }
+    td { padding: 9px 12px; border-bottom: 1px solid #efefef; color: #444; }
+    td:first-child { color: #222; font-weight: 500; }
+
+    /* steps */
+    .steps { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
+    .step { display: flex; gap: 14px; align-items: flex-start; }
+    .step-num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #222;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: grid; place-items: center;
+      margin-top: 2px;
+    }
+    .step-body p { margin: 0; font-size: 0.86rem; }
+    .step-body strong { color: #222; }
+
+    /* note box */
+    .note {
+      background: #fffbea;
+      border-left: 3px solid #f0c040;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      font-size: 0.84rem;
+      color: #555;
+      margin: 12px 0;
+    }
+
+    /* arch box */
+    .arch {
+      background: #f4f4f4;
+      border: 1px solid #e0e0e0;
+      border-radius: 7px;
+      padding: 18px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.9;
+      color: #444;
+      overflow-x: auto;
+      margin: 10px 0 16px;
+      white-space: pre;
+    }
+
+    /* file tree */
+    .filetree {
+      background: #f4f4f4;
+      border: 1px solid #e0e0e0;
+      border-radius: 7px;
+      padding: 16px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.9;
+      color: #555;
+      white-space: pre;
+    }
+
+    /* footer */
+    footer {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.78rem;
+      padding: 32px 0 16px;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 12px 16px; }
+      nav { display: none; }
+      .container { padding: 32px 16px 60px; }
+      .hero h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span>Parallel Image Processing</span>
+    <small>IFB 206 · Itenas Bandung</small>
+  </div>
+  <nav>
+    <a href="#overview">Overview</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#getting-started">Getting Started</a>
+    <a href="#theory">Theory</a>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero" id="overview">
+    <h1>Parallel Image Processing<br>with Python & Flask</h1>
+    <p>
+      A web app that compares serial vs. parallel Canny edge detection
+      using Python's <code>multiprocessing</code> module. Built for
+      IFB 206 Komputasi Paralel, Semester Genap 2025/2026.
+    </p>
+    <div class="tags">
+      <span class="tag green">Python 3</span>
+      <span class="tag green">Flask</span>
+      <span class="tag green">OpenCV</span>
+      <span class="tag">multiprocessing</span>
+      <span class="tag">NumPy</span>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Architecture -->
+  <section id="architecture">
+    <h2>Architecture</h2>
+    <p>The image is split into 4 horizontal chunks, each processed by a separate worker process in parallel, then merged back into one result.</p>
+    <div class="arch">User (Browser)
+   │
+   ▼
+Flask Web Server (app.py)
+   │
+   ├── Serial:   cv2.Canny(full_image)
+   │
+   └── Parallel: multiprocessing.Pool(4)
+           ├── Worker 1 → cv2.Canny(chunk_1)
+           ├── Worker 2 → cv2.Canny(chunk_2)
+           ├── Worker 3 → cv2.Canny(chunk_3)
+           └── Worker 4 → cv2.Canny(chunk_4)
+                   └── np.vstack() → merged result</div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><p><strong>Upload</strong> — user uploads an image through the web form. Saved to <code>static/uploads/</code>.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><p><strong>Split</strong> — image loaded as grayscale, divided into 4 chunks with <code>numpy.array_split</code>.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><p><strong>Process</strong> — each chunk processed in parallel via <code>multiprocessing.Pool(4)</code>. Serial run also timed for comparison.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body"><p><strong>Merge</strong> — results stacked with <code>np.vstack</code>, saved to <code>static/results/</code>, displayed with timing data.</p></div>
+      </div>
+    </div>
+
+    <h3>Core Code</h3>
+<pre>def process_chunk(chunk):
+    return cv2.Canny(chunk, 100, 200)
+
+# Split
+chunks = np.array_split(image, 4)
+
+# Parallel
+with Pool(4) as pool:
+    processed = pool.map(process_chunk, chunks)
+
+# Merge
+result = np.vstack(processed)</pre>
+  </section>
+
+  <!-- Tech Stack -->
+  <section id="tech-stack">
+    <h2>Tech Stack</h2>
+    <table>
+      <thead><tr><th>Component</th><th>Technology</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Web Framework</td><td>Flask</td><td>HTTP server & routing</td></tr>
+        <tr><td>Image Processing</td><td>OpenCV (cv2)</td><td>Canny edge detection</td></tr>
+        <tr><td>Parallelism</td><td>multiprocessing.Pool</td><td>Multi-core processing</td></tr>
+        <tr><td>Array Operations</td><td>NumPy</td><td>Splitting & merging</td></tr>
+        <tr><td>Frontend</td><td>HTML + Jinja2</td><td>Web UI</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Getting Started -->
+  <section id="getting-started">
+    <h2>Getting Started</h2>
+
+    <h3>Requirements</h3>
+    <p>Python 3.8+ and pip.</p>
+
+    <h3>Install & Run</h3>
+<pre># Clone repo
+git clone https://github.com/Student-Embedded-Control-and-AI-Fest/CuffnCode
+cd ParallelImageProcessing
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run
+python app.py</pre>
+
+    <p>Open <code>http://127.0.0.1:5000</code> in your browser.</p>
+
+    <div class="note">
+      <strong>Windows:</strong> If <code>pip</code> is not recognized, use <code>python -m pip install -r requirements.txt</code> instead.
+    </div>
+
+    <h3>Project Structure</h3>
+    <div class="filetree">ParallelImageProcessing/
+├── app.py                  ← main Flask app
+├── requirements.txt        ← dependencies
+├── templates/
+│   └── index.html          ← web UI
+├── static/
+│   ├── uploads/            ← uploaded images
+│   └── results/            ← processed output
+└── docs/
+    └── index.html          ← this page</div>
+  </section>
+
+  <!-- Theory -->
+  <section id="theory">
+    <h2>Parallelism Theory</h2>
+    <p>
+      This project demonstrates <strong>task parallelism</strong> — dividing independent work
+      across multiple CPU cores. The theoretical maximum speedup follows <strong>Amdahl's Law</strong>:
+    </p>
+<pre>S = 1 / ( (1 - P) + P/N )
+
+  S = speedup
+  P = parallelizable portion of the task
+  N = number of processors (4 in this project)</pre>
+    <p>
+      In practice, overhead from process spawning and memory copying reduces actual speedup,
+      especially on small images. Results are more visible with larger input files.
+    </p>
+  </section>
+
+  <hr>
+
+  <!-- Credits -->
+  <section id="credits">
+    <h2>References</h2>
+    <table>
+      <thead><tr><th>Resource</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr><td>OpenCV Canny Tutorial</td><td><a href="https://docs.opencv.org/4.x/da/d22/tutorial_py_canny.html" style="color:#2563eb;font-size:0.82rem;">docs.opencv.org</a></td></tr>
+        <tr><td>Python multiprocessing</td><td><a href="https://docs.python.org/3/library/multiprocessing.html" style="color:#2563eb;font-size:0.82rem;">docs.python.org</a></td></tr>
+        <tr><td>Flask docs</td><td><a href="https://flask.palletsprojects.com/" style="color:#2563eb;font-size:0.82rem;">flask.palletsprojects.com</a></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+<footer>
+  IFB 206 Komputasi Paralel &nbsp;·&nbsp; Semester Genap 2025/2026 &nbsp;·&nbsp; Institut Teknologi Nasional Bandung
+</footer>
+
+</body>
+</html>
